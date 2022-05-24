@@ -32,10 +32,7 @@ async def init_session():
 
 
 async def request(method: str, prefix: str, data: dict = None):
-    if data:
-        r = await _session.request(method, BASE_URL + prefix, json=data, headers={'Authorization': _token})
-    else:
-        r = await _session.request(method, BASE_URL + prefix, json=data, headers={'Authorization': _token})
+    r = await _session.request(method, BASE_URL + prefix, json=data, headers={'Authorization': _token})
 
     if not r.ok:
         raise Exception(r.status, await r.json(), prefix)
