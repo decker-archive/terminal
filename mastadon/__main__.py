@@ -82,6 +82,7 @@ async def edit_user(**data):
     return await r.json()
 
 async def parse_main_menu(selection: str):
+    pause_up()
     if selection[0] == MAIN_MENU[0]:
         settings = [
             'username',
@@ -119,45 +120,30 @@ async def parse_main_menu(selection: str):
             if g['id'] == guild[0]['id']:
                 guild = g
 
-        _channel_names = [channel['name'] for channel in channels]
-        channel_names = ''
-        
-        for i in range(len(_channel_names) - 1):
-            channel_names += _channel_names.pop(i)
-            if len(_channel_names) - 1 != 0:
-                channel_names += ', '
+        channel_names = [channel['name'] for channel in channels if channel['type'] == 1]
+        category_names = [channel['name'] for channel in channels if channel['type'] == 0]
 
         p = '''
         id: {id}
         name: {name}
         description: {description}
         channels: {channels}
+        categorys: {categorys}
         nsfw: {nsfw}
         verified: {verified}
         '''.format(
             id=str(guild['id']),
             name=guild['name'],
             description=guild['description'],
-            channels=channel_names,
+            channels=', '.join(channel_names),
+            categorys=', '.join(category_names),
             nsfw='yes' if guild['nsfw'] is True else 'no',
             verified='yes' if guild['verified'] is True else 'no'
         )
 
-        ET: bool = False
-
-        def return_home():
-            global ET
-            ET = True
-            s = main_menu()
-            loop = asyncio.get_running_loop()
-            loop.create_task(parse_main_menu(s))
-
-        keyboard.add_hotkey('esc', return_home)
-
         msg(p)
 
-        while not ET:
-            pass
+        # TODO: Channel Menu
 
 async def handler(type):
     global _token
@@ -168,6 +154,7 @@ async def handler(type):
     if type[0] == 'Login':
         email = input('email: ')
         password = getpass.getpass('password: ')
+        pause_up()
 
         await init_session()
 
@@ -189,8 +176,14 @@ async def handler(type):
     else:
         return msg('ERROR: Invalid Input')
 
+def pause_up():
+    n = '\n'
+    for _ in range(100):
+        msg(n)
+
 async def main():
     type = pick.pick(['Login', 'SignUp'], 'Please choose an option: ', indicator='>')
+    pause_up()
     await handler(type)
 
 
